@@ -15,6 +15,7 @@ output_directory = 'temp'
 '''
 
 if __name__ == '__main__':
+    pptx = 'filename.pptx'
     ppt = PowerPoint(pptx, 'video', 'temp, 'wmv','mp4','avi')
 #or
     #ppt = PowerPoint(pptx, 'video')
