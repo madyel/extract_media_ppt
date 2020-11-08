@@ -1,0 +1,23 @@
+language: python
+
+python:
+  - "3.6"
+  - "3.7"
+  - "3.8"
+  - "3.8-dev"
+
+before_install:
+  - sudo apt-get -y install libgnutls-dev python-dev
+
+install:
+  - pip install -r requirements.txt
+  - pip install coverage
+
+script: true
+  - nosetests --with-coverage --coverage report
+
+after_script:
+  - coveralls
+
+after_success:
+- codecov
