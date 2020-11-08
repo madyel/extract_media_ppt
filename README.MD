@@ -1,6 +1,6 @@
 # Extract Media PowerPoint
 
-![](https://travis-ci.org/madyel/extract_media_ppt.svg?branch=main)
+![](https://travis-ci.org/madyel/extract_media_ppt.svg?branch=main) [![GitHub license](https://img.shields.io/github/license/madyel/extract_media_ppt)](https://github.com/madyel/extract_media_ppt/blob/main/LICENSE.txt) ![GitHub last commit](https://img.shields.io/github/last-commit/madyel/extract_media_ppt)
 
 Example:
 
