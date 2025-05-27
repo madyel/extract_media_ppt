@@ -1,131 +1,121 @@
-from pptx import Presentation
-from pptx.enum.shapes import PP_MEDIA_TYPE
-from pptx.enum.shapes import MSO_SHAPE_TYPE
-from zipfile import ZipFile
 import os
+from zipfile import ZipFile
+from pptx import Presentation
+from pptx.enum.shapes import PP_MEDIA_TYPE, MSO_SHAPE_TYPE
 
-DEFAULT_PATH_PPT = 'ppt/media'
+DEFAULT_PPT_MEDIA_PATH = 'ppt/media'
 
-class Ext:
+class AllowedExtensions:
     def __init__(self):
-        self._ext_permission_video = ['mp4', 'avi', 'mpg', 'mpeg', 'wmv']
-        self._ext_permission_image = ['png', 'jpeg', 'jpg', 'bmp', 'svg']
-    @property
-    def ext_permission_video(self):
-        return self._ext_permission_video
-    @ext_permission_video.setter
-    def ext_permission_video(self, ext):
-        if len(ext) != 0:
-            self._ext_permission_video = ext
-    @property
-    def ext_permission_image(self):
-        return self._ext_permission_image
-    @ext_permission_image.setter
-    def ext_permission_image(self, ext):
-        if len(ext) != 0:
-            self._ext_permission_image = ext
+        self._video = ['mp4', 'avi', 'mpg', 'mpeg', 'wmv']
+        self._image = ['png', 'jpeg', 'jpg', 'bmp', 'svg']
 
-class PowerPoint(object):
-    def __init__(self, filename, type, output='temp', *file_extension):
-        self.ext = Ext()
-        self.filename = filename
-        self.output = output
-        self.type=type
-        self.prs = Presentation(self.filename)
-        if self.type == 'image':
-            self.ext.ext_permission_image = file_extension
+    @property
+    def video(self):
+        return self._video
+
+    @video.setter
+    def video(self, ext_list):
+        if ext_list:
+            self._video = list(ext_list)
+
+    @property
+    def image(self):
+        return self._image
+
+    @image.setter
+    def image(self, ext_list):
+        if ext_list:
+            self._image = list(ext_list)
+
+class PowerPointMediaExtractor:
+    def __init__(self, filepath, media_type='image', output_dir='temp', *extensions):
+        self.extensions = AllowedExtensions()
+        self.filepath = filepath
+        self.output_dir = output_dir
+        self.media_type = media_type.lower()
+        self.presentation = Presentation(self.filepath)
+
+        if self.media_type == 'image':
+            self.extensions.image = extensions
+        elif self.media_type == 'video':
+            self.extensions.video = extensions
         else:
-            self.ext.ext_permission_video = file_extension
+            raise ValueError("Invalid media_type. Use 'image' or 'video'.")
 
-    def getInfoImage(self,media):
-        if hasattr(media, 'shape_type'):
-            if media.shape_type == MSO_SHAPE_TYPE.PICTURE:
-                info = {}
-                self.num_media = self.num_media + 1
-                info['shape_id'] = media.shape_id
-                info['filename'] = "image" + str(self.num_media)
-                info['num_slide'] = self.num_slide
-                info['num_media'] = self.num_media
-                self.infos.append(info)
+        self._infos = []
+        self._current_slide_num = 0
+        self._media_counter = 0
 
-    def getInfoVideo(self,media):
-        if hasattr(media, 'media_type'):
-            if media.media_type == PP_MEDIA_TYPE.MOVIE:
-                info = {}
-                self.num_media = self.num_media + 1
-                info['shape_id'] = media.shape_id
-                info['filename'] = "media" + str(self.num_media)
-                info['num_slide'] = self.num_slide
-                info['num_media'] = self.num_media
-                self.infos.append(info)
+    def _collect_media_info(self):
+        self._infos = []
+        self._media_counter = 0
 
-    def __start(self):
-        self.infos = list()
-        self.num_slide = 0
-        self.num_media = 0
-        for slide in self.prs.slides:
-            self.num_slide = self.num_slide + 1
-            for media in slide.shapes:
-                if self.type == 'image':
-                    self.getInfoImage(media)
-                if self.type == 'video':
-                    self.getInfoVideo(media)
-
-
-    def has_video(self, prs):
-        for slide in prs.slides:
+        for idx, slide in enumerate(self.presentation.slides, start=1):
+            self._current_slide_num = idx
             for shape in slide.shapes:
-                if hasattr(shape, 'media_type'):
-                    if shape.media_type == PP_MEDIA_TYPE.MOVIE:
-                        return True
-        return False
+                if self.media_type == 'image':
+                    self._extract_image_info(shape)
+                elif self.media_type == 'video':
+                    self._extract_video_info(shape)
 
+    def _extract_image_info(self, shape):
+        if getattr(shape, 'shape_type', None) == MSO_SHAPE_TYPE.PICTURE:
+            self._media_counter += 1
+            self._infos.append({
+                'shape_id': shape.shape_id,
+                'filename': f"image{self._media_counter}",
+                'slide_number': self._current_slide_num
+            })
 
-    def check_idSlide(self, filename, list):
-        for ls in list:
-            if filename in ls['filename']:
-                return ls['num_slide']
+    def _extract_video_info(self, shape):
+        if getattr(shape, 'media_type', None) == PP_MEDIA_TYPE.MOVIE:
+            self._media_counter += 1
+            self._infos.append({
+                'shape_id': shape.shape_id,
+                'filename': f"media{self._media_counter}",
+                'slide_number': self._current_slide_num
+            })
 
-    def extractAllMedia(self):
-        check_ext = 0
-        with ZipFile(self.filename, 'r') as zipObject:
-           listOfFileNames = zipObject.namelist()
-           for fileName in listOfFileNames:
-               if fileName.startswith(DEFAULT_PATH_PPT):
-                   tmp = self.output
-                   if not os.path.exists(tmp):
-                       os.makedirs(tmp)
-                   zipObject.extract(fileName, tmp)
-                   check_ext = check_ext + 1
-        if check_ext == 0:
-           print("Not Found!")
-        else:
-           print(f'Completed, {check_ext} media')
+    def _find_slide_for_filename(self, filename_stem):
+        for item in self._infos:
+            if filename_stem in item['filename']:
+                return item['slide_number']
+        return None
 
+    def extract_all_media(self):
+        extracted = 0
+        with ZipFile(self.filepath, 'r') as archive:
+            for name in archive.namelist():
+                if name.startswith(DEFAULT_PPT_MEDIA_PATH):
+                    os.makedirs(self.output_dir, exist_ok=True)
+                    archive.extract(name, self.output_dir)
+                    extracted += 1
 
+        print(f"{'Completed' if extracted else 'Not Found!'}, {extracted} media")
 
-    def extract(self):
-        self.__start()
-        check_ext = 0
-        ext = self.ext.ext_permission_video
-        if self.type == 'image':
-            ext = self.ext.ext_permission_image
-        if len(self.infos) == 0:
-            print("Not Found!")
-            exit()
-        with ZipFile(self.filename, 'r') as zipObject:
-           listOfFileNames = zipObject.namelist()
-           for fileName in listOfFileNames:
-               if fileName.startswith(DEFAULT_PATH_PPT):
-                   filename, file_extension = os.path.splitext(fileName)
-                   name = os.path.basename(filename)
-                   if file_extension[1:] in ext:
-                       tmp = self.output +'/'+ str(self.check_idSlide(name, self.infos))
-                       if not os.path.exists(tmp):
-                           os.makedirs(tmp)
-                       zipObject.extract(fileName, tmp)
-                       check_ext = check_ext + 1
-        if check_ext == 0:
-            print("Not Found!")
-        else:
-            print(f'Completed, {check_ext} media')
+    def extract_filtered_media(self):
+        self._collect_media_info()
+        if not self._infos:
+            print("No media found.")
+            return
+
+        allowed_exts = self.extensions.image if self.media_type == 'image' else self.extensions.video
+        allowed_exts = [e.lower() for e in allowed_exts]
+        extracted = 0
+
+        with ZipFile(self.filepath, 'r') as archive:
+            for name in archive.namelist():
+                if name.startswith(DEFAULT_PPT_MEDIA_PATH):
+                    filename, file_ext = os.path.splitext(name)
+                    file_ext = file_ext[1:].lower()
+                    if file_ext in allowed_exts:
+                        base_name = os.path.basename(filename)
+                        slide_number = self._find_slide_for_filename(base_name)
+                        if slide_number is not None:
+                            target_path = os.path.join(self.output_dir, str(slide_number))
+                            os.makedirs(target_path, exist_ok=True)
+                            archive.extract(name, target_path)
+                            extracted += 1
+
+        print(f"{'Completed' if extracted else 'Not Found!'}, {extracted} media")
