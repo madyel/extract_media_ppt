@@ -3,8 +3,8 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "Extract-Media-PowerPoint"
-version = "0.7.0"
+name = "pptmedia"
+version = "1.0.1"
 description = "Extract images and videos from PowerPoint presentations"
 readme = "README.md"
 license = { file = "LICENSE.txt" }

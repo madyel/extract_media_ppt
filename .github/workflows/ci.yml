@@ -1,8 +1,9 @@
-name: CI
+name: CI & Publish
 
 on:
   push:
     branches: ["main", "master"]
+    tags: ["v*"]
   pull_request:
     branches: ["main", "master"]
 
@@ -31,3 +32,28 @@ jobs:
 
       - name: Run tests
         run: pytest --tb=short
+
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    permissions:
+      id-token: write  # necessario per Trusted Publishing
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install build
+        run: pip install build
+
+      - name: Build package
+        run: python -m build
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
