@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pptmedia"
-version = "1.0.1"
+version = "1.0.2"
 description = "Extract images and videos from PowerPoint presentations"
 readme = "README.md"
 license = { file = "LICENSE.txt" }
-authors = [{ name = "MaDyEl", email = "madyel@tutanota.com" }]
+authors = [{ name = "MaDyEl", email = "madyel83@gmail.com" }]
 requires-python = ">=3.10"
 keywords = ["powerpoint", "pptx", "media", "extract", "images", "videos"]
 classifiers = [
