@@ -1,23 +1,12 @@
 language: python
 
 python:
-  - "3.6"
-  - "3.7"
-  - "3.8"
-  - "3.8-dev"
-
-before_install:
-  - sudo apt-get -y install libgnutls-dev python-dev
+  - "3.10"
+  - "3.11"
+  - "3.12"
 
 install:
-  - pip install -r requirements.txt
-  - pip install coverage
+  - pip install -e ".[dev]"
 
-script: true
-  - nosetests --with-coverage --coverage report
-
-after_script:
-  - coveralls
-
-after_success:
-- codecov
+script:
+  - pytest --tb=short
