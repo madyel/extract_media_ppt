@@ -29,9 +29,9 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/madyel/extract_media_ppt"
-Repository = "https://github.com/madyel/extract_media_ppt"
-Issues = "https://github.com/madyel/extract_media_ppt/issues"
+Homepage = "https://github.com/madyel/pptmedia"
+Repository = "https://github.com/madyel/pptmedia"
+Issues = "https://github.com/madyel/pptmedia/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]
