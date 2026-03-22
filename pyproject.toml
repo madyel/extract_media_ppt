@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "Extract-Media-PowerPoint"
+version = "0.7.0"
+description = "Extract images and videos from PowerPoint presentations"
+readme = "README.md"
+license = { file = "LICENSE.txt" }
+authors = [{ name = "MaDyEl", email = "madyel@tutanota.com" }]
+requires-python = ">=3.10"
+keywords = ["powerpoint", "pptx", "media", "extract", "images", "videos"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Multimedia",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "lxml>=6.0.2",
+    "Pillow>=12.1.1",
+    "python-pptx>=1.0.2",
+]
+
+[project.urls]
+Homepage = "https://github.com/madyel/extract_media_ppt"
+Repository = "https://github.com/madyel/extract_media_ppt"
+Issues = "https://github.com/madyel/extract_media_ppt/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["extract*"]
