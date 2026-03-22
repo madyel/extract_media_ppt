@@ -24,7 +24,7 @@ A lightweight Python library to extract images and videos from PowerPoint (`.ppt
 ## Installation
 
 ```bash
-pip install Extract-Media-PowerPoint
+pip install pptmedia
 ```
 
 ## Quick Start
